@@ -1,13 +1,12 @@
-let flags = [];
+let flags = new Array(10).fill(false);
 let count = 0;
+let root = document.getElementById('root')
+let isredandt = false
+let canvas = document.querySelector("#canvas")
+let ctx = canvas.getContext("2d")
+circal1(0, canvas.width, 20, root)
 
-function start() {
-    let canvas = document.querySelector("#canvas");
-    let root = document.getElementById('root')
-    circal1(0, canvas.width, 20, root)
 
-
-}
 
 function makeButton(x, y) {
     let canvas = document.querySelector("#canvas");
@@ -19,8 +18,6 @@ function makeButton(x, y) {
     ctx.stroke(path)
     return path
 
-
-
 }
 
 function getXY(canvas, event) { //shape
@@ -30,68 +27,77 @@ function getXY(canvas, event) { //shape
     return {x: x, y: y}
 }
 
-function circal1(xstart, xend, y, dom) {
-    flags[count]=false
+function circal1(start, end, y, dom) {
     let ttemp = count
 
-    let canvas = document.querySelector("#canvas")
-    let ctx = canvas.getContext("2d")
-
     ctx.beginPath()
-    ctx.arc((xstart + xend) / 2, y + 80, 30, 0, Math.PI * 2);
+    ctx.arc((start + end) / 2, y + 80, 30, 0, Math.PI * 2);
     ctx.stroke()
     ctx.font = "10px Arial"
-    ctx.fillText(dom.tagName, (xstart + xend) / 2, y + 80, 50);
-    let path = makeButton(((xstart + xend) / 2)-50,y+50)
-    document.addEventListener("click", function (e) {
-        if (!flags[ttemp]) {
-            const XY = getXY(canvas, e)
-            if (ctx.isPointInPath(path, XY.x, XY.y)) {
-                ctx.beginPath()
-                ctx.rect(xstart, y + 10, xstart + xend, canvas.height);
-                ctx.fillStyle = "White"
-                ctx.fill()
-                flags[ttemp] = true
-            }
-        }else{
-            /////////////////////////////////
-            let d = (xend - xstart) / dom.childElementCount
-            let tempStart = xstart
-            let tempEnd = d + xstart
-            y += 100
-            flags[ttemp] = false
-            for (let index = 0; index < dom.childElementCount; index++) {
-                ctx.moveTo((xstart + xend) / 2, y + 10)
-                ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
-                ctx.stroke()
-                circal1(tempStart, tempEnd, y, dom.children[index]);
-                tempStart += d
-                tempEnd += d
+    ctx.fillText(ttemp+' / '+dom.tagName, ((start + end) / 2) - 10, y + 80, 50);
+    let path = makeButton(((start + end) / 2)-50,y+50)
+
+    if(!isredandt) {
+        document.addEventListener("click", function (e) {
+            if (!flags[ttemp]) {
+                const XY = getXY(canvas, e)
+                if (ctx.isPointInPath(path, XY.x, XY.y)) {
+                    console.log(ttemp)
+                    flags[ttemp] = true
+                    count = 0
+                    isredandt = true
+                    console.log(flags)
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    circal1(0, canvas.width, 20, root)
+                }
+            } else {
+                isredandt = true
+                /////////////////////////////////
+                console.log(2)
+                flags[ttemp] = false
+                count = 0
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                circal1(0, canvas.width, 20, root)
             }
 
-            ////////////////////////////////
-
-        }
-
-    }, false)
+        }, false)
+    }
     count++
 
 
+    if (!flags[ttemp]) {
+        let d = (end - start) / dom.childNodes.length
+        let tempStart = start
+        let tempEnd = d + start
+        y += 100
+        for (let index = 0; index < dom.childNodes.length; index++) {
 
-    let d = (xend - xstart) / dom.childElementCount
-    let tempStart = xstart
-    let tempEnd = d + xstart
-    y += 100
-    for (let index = 0; index < dom.childElementCount; index++) {
+            console.log(dom.childNodes[index].nodeType)
+            // circal1(tempStart, tempEnd, y, dom.children[index])
+            ctx.moveTo((start + end) / 2, y + 10)
 
-        ctx.moveTo((xstart + xend) / 2, y + 10)
-        ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
-        ctx.stroke()
-        circal1(tempStart, tempEnd, y, dom.children[index]);
-        tempStart += d
-        tempEnd += d
+            if (dom.childNodes[index].nodeType === 1){
+                ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
+                ctx.stroke()
+                circal1(tempStart, tempEnd, y, dom.childNodes[index])
+            }
+            else if (dom.childNodes[index].nodeType === 3) {
+                ctx.lineTo(((tempStart + tempEnd) / 2)+50, y + 80)
+                ctx.stroke()
+                rectText(tempStart, tempEnd, y, dom.childNodes[index])
+            }
+            tempStart += d
+            tempEnd += d
+        }
+
     }
 }
 
+function rectText(start,end,y,dom) {
+    ctx.beginPath()
+    ctx.rect((start + end) / 2, y + 80, 100, 70,);
+    ctx.stroke()
+    ctx.font = "10px Arial"
+    ctx.fillText(' TEXT ', ((start + end) / 2) + 30, y + 110, 50);
 
-window.addEventListener('load', start, false);
+}
