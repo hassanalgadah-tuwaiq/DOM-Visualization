@@ -7,11 +7,11 @@ let ctx = canvas.getContext("2d")
 let parent = []
 let levels =[]
 let level = 0;
+let place = 1
 parent[0] = root
 let child = []
-circal1(0, canvas.width, 20, root)
-console.log(getNodesPerLevel(1))
-
+circal1(0, canvas.width, 20, root , 1)
+console.log(getNodesPerLevel(0))
 
 function getNodesPerLevel(row) {
     return row <= 0 ? 1 : _getNodesPerLevel(document, row)
@@ -40,7 +40,6 @@ function makelevels(){
         for (let i = 0; i < parent.length; i++) {
             for (let j = 0; j < parent[i].childNodes.length; j++) {
                 for (let k = 0; k < parent[j].childNodes.length; k++) {
-                    console.log(1)
                     child.push(parent[j].childNodes[k])
                 }
             }
@@ -48,7 +47,6 @@ function makelevels(){
             parent = child
             child = []
         }
-    console.log(levels)
 }
 
 function makeButton(x, y, flag) {
@@ -81,14 +79,14 @@ function getXY(canvas, event) { //shape
     return {x: x, y: y}
 }
 
-function circal1(start, end, y, dom) {
+function circal1(start, end, y, dom , place) {
     let ttemp = count
     ctx.beginPath()
-    ctx.arc(((canvas.width/getNodesPerLevel(level))/2), y + 80, 30, 0, Math.PI * 2);
+    ctx.arc(((canvas.width/getNodesPerLevel(level))/2)*place, y + 80, 30, 0, Math.PI * 2);
     ctx.stroke()
     ctx.fillStyle = "black"
     ctx.font = "10px Arial"
-    ctx.fillText(ttemp + ' / ' + dom.tagName, ((start + end) / 2) - 10, y + 80, 50);
+    ctx.fillText(ttemp + ' / placeis:' + place +" level is: "+level + dom.tagName, ((start + end) / 2) - 10, y + 80, 50);
     let path = makeButton(((start + end) / 2) - 50, y + 50, flags[ttemp])
     let attr = makeattr(((start + end) / 2) - 50, y + 50, flags[ttemp])
 
@@ -129,6 +127,7 @@ function circal1(start, end, y, dom) {
         let tempStart = start
         let tempEnd = d + start
         y += 100
+        place = 1
         for (let index = 0; index < dom.childNodes.length; index++) {
 
             ctx.moveTo((start + end) / 2, y + 10)
@@ -137,12 +136,12 @@ function circal1(start, end, y, dom) {
                 level++
                 ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
                 ctx.stroke()
-                circal1(tempStart, tempEnd, y, dom.childNodes[index])
+                circal1(tempStart, tempEnd, y, dom.childNodes[index],place++)
             } else if (dom.childNodes[index].nodeType === 3 && dom.childNodes[index].data.trim() !== "") {
                 level++
                 ctx.lineTo(((tempStart + tempEnd) / 2) , y + 50)
                 ctx.stroke()
-                rectText(tempStart, tempEnd, y, dom.childNodes[index])
+                rectText(tempStart, tempEnd, y, dom.childNodes[index],place++)
             }
             tempStart += d
             tempEnd += d
