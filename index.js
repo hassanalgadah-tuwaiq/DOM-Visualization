@@ -1,4 +1,4 @@
-let flags = new Array(10).fill(false);
+let flags = new Array(20).fill(false);
 let count = 0;
 let root = document.getElementById('root')
 let isredandt = false
@@ -6,11 +6,12 @@ let canvas = document.querySelector("#canvas")
 let ctx = canvas.getContext("2d")
 let parent = []
 let levels =[]
+let places = new Array(20).fill(0);
 let level = 0;
 let place = 1
 parent[0] = root
 let child = []
-circal1(0, canvas.width, 20, root , 1)
+circal1(0, canvas.width, 20, root , place , level,canvas.width)
 console.log(getNodesPerLevel(0))
 
 function getNodesPerLevel(row) {
@@ -79,14 +80,16 @@ function getXY(canvas, event) { //shape
     return {x: x, y: y}
 }
 
-function circal1(start, end, y, dom , place) {
+function circal1(start, end, y, dom , place, level) {
+    places[level] += 1
+    console.log(places[level])
     let ttemp = count
     ctx.beginPath()
-    ctx.arc(((canvas.width/getNodesPerLevel(level))/2)*place, y + 80, 30, 0, Math.PI * 2);
+    ctx.arc((((canvas.width/getNodesPerLevel(level)))*places[level]), y + 80, 30, 0, Math.PI * 2);
     ctx.stroke()
     ctx.fillStyle = "black"
     ctx.font = "10px Arial"
-    ctx.fillText(ttemp + ' / placeis:' + place +" level is: "+level + dom.tagName, ((start + end) / 2) - 10, y + 80, 50);
+    ctx.fillText(ttemp + ' / placeis:' + places[level] +" level is: "+level +" / "+ dom.tagName, ((start + end) / 2) - 10, y + 80, 500);
     let path = makeButton(((start + end) / 2) - 50, y + 50, flags[ttemp])
     let attr = makeattr(((start + end) / 2) - 50, y + 50, flags[ttemp])
 
@@ -109,6 +112,7 @@ function circal1(start, end, y, dom , place) {
                     circal1(0, canvas.width, 20, root)
                 }
             } else if (ctx.isPointInPath(attr, XY.x, XY.y)) {
+                isredandt = true
                 let result = ""
                 for (let i = 0; i < dom.attributes.length; i++) {
                     result += dom.attributes[i].name + ": " + dom.attributes[i].value + "\n"
@@ -128,21 +132,21 @@ function circal1(start, end, y, dom , place) {
         let tempEnd = d + start
         y += 100
         place = 1
+        level++
         for (let index = 0; index < dom.childNodes.length; index++) {
 
             ctx.moveTo((start + end) / 2, y + 10)
 
             if (dom.childNodes[index].nodeType === 1) {
-                level++
                 ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
                 ctx.stroke()
-                circal1(tempStart, tempEnd, y, dom.childNodes[index],place++)
+                circal1(tempStart, tempEnd, y, dom.childNodes[index],place++, level)
             } else if (dom.childNodes[index].nodeType === 3 && dom.childNodes[index].data.trim() !== "") {
-                level++
                 ctx.lineTo(((tempStart + tempEnd) / 2) , y + 50)
                 ctx.stroke()
-                rectText(tempStart, tempEnd, y, dom.childNodes[index],place++)
+                rectText(tempStart, tempEnd, y, dom.childNodes[index],place++,level)
             }
+
             tempStart += d
             tempEnd += d
         }
