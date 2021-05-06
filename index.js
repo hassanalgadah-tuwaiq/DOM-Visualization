@@ -4,14 +4,16 @@ let root = document.getElementById('root')
 let isredandt = false
 let canvas = document.querySelector("#canvas")
 let ctx = canvas.getContext("2d")
-let parent = []
-let levels =[]
 let places = new Array(20).fill(0);
 let level = 0;
-let place = 1
-parent[0] = root
-let child = []
+let timer;
+let pluseimage = new Image()
+let minusimage = new Image()
+let count2 = 0;
+pluseimage.src = 'imgs/1200px-OCR-A_char_Plus_Sign.svg.png'
+minusimage.src = 'imgs/1484942355ios-emoji-heavy-minus-sign.png'
 drawElements( 20, root  , level)
+
 
 function getNodesPerLevel(row) {
     return row <= 0 ? 1 : _getNodesPerLevel(document, row)
@@ -22,8 +24,12 @@ function _getNodesPerLevel(e, row) {
     else if (!("childNodes" in e))
         return 0;
     var total = 0
-    for (let i = 0; i < e.childNodes.length; i++)
-        total += _getNodesPerLevel(e.childNodes[i], row - 1)
+    if (!flags[count2]) {
+        for (let i = 0; i < e.childNodes.length; i++) {
+            total += _getNodesPerLevel(e.childNodes[i], row - 1)
+            count2++
+        }
+    }
     return total;
 }
 function nonEmptyNodes(e) {
@@ -35,46 +41,31 @@ function nonEmptyNodes(e) {
     return total;
 }
 
-
-function makelevels(){
-        for (let i = 0; i < parent.length; i++) {
-            for (let j = 0; j < parent[i].childNodes.length; j++) {
-                for (let k = 0; k < parent[j].childNodes.length; k++) {
-                    child.push(parent[j].childNodes[k])
-                }
-            }
-            levels.push(child.length);
-            parent = child
-            child = []
-        }
-}
-
 function makeButton(x, y, flag) {
     const path = new Path2D()
+    let currentimg
     path.rect(x, y, 20, 20)
     if (flag) {
-        ctx.fillStyle = "red"
+        currentimg = minusimage
     } else {
-        ctx.fillStyle = "blue"
+        currentimg = pluseimage
     }
-    ctx.fill(path)
-    ctx.stroke(path)
+    ctx.drawImage(currentimg,x,y,20,25);
     return path
 }
 
 function makeattr(x, y) {
     const path = new Path2D()
     path.rect(x, y + 40, 20, 20)
-    ctx.fillStyle = "black"
-    ctx.fill(path)
-    ctx.stroke(path)
+    var img = new Image();
+    img.src = 'imgs\\twIm6.png';
+    ctx.drawImage(img,x,y+40,20,25);
     return path
 }
 
 function makehint(x,y) {
     const path = new Path2D()
     path.rect(x-20, y-20, 40, 40)
-    ctx.stroke(path)
     return path
 }
 
@@ -102,21 +93,42 @@ function drawElements(y, dom, level) {
     let x = (((canvas.width/(getNodesPerLevel(level)+1)))*places[level])
     ctx.beginPath()
     ctx.arc(x, y + 80, 30, 0, Math.PI * 2);
-    ctx.fillStyle = "black"
-    ctx.strokeStyle= "gray"
+    ctx.fillStyle = "#7371FC"
+    ctx.fill()
     ctx.stroke()
     ctx.font = "10px Arial"
-    ctx.fillText(ttemp +" / "+ dom.tagName, x-15, y + 80, 500);
+    ctx.fillStyle = "black"
+    ctx.fillText(dom.tagName, x-15, y + 80, 500);
     let path = makeButton(x - 50, y + 50,flags[ttemp])
     let attr = makeattr(x - 50, y + 50)
     let hint = makehint(x,y+80)
     if (!isredandt) {
-        document.addEventListener("mouseover",(e)=>{
+        document.addEventListener("mousemove",function(e){
+
             const XY = getXY(canvas, e)
-            if (ctx.isPointInPath(hint, XY.x, XY.y)) {
-                console.log("hello everyboy")
+            if (ctx.isPointInPath(hint, XY.x, XY.y) && dom.innerHTML !== '') {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    ctx.beginPath()
+                    let text = dom.innerHTML.split('\n')
+                    ctx.rect(XY.x, XY.y, 200, 10*text.length)
+                    ctx.fillStyle = "#25283D"
+                    ctx.fill()
+                    ctx.stroke()
+                    ctx.font = "10px Arial"
+                    let texty =XY.y+5
+                    ctx.fillStyle = "#FC5130"
+                    for (let i = 0; i < text.length; i++) {
+                        ctx.fillText(text[i], XY.x, texty+=10,200)
+                    }
+                    ctx.closePath()
+                }, 300);
+
             }
-        },false)
+            redraw()
+
+        });
+
         document.addEventListener("click", function (e) {
             const XY = getXY(canvas, e)
             if (ctx.isPointInPath(path, XY.x, XY.y)) {
@@ -168,8 +180,19 @@ function rectText( y, dom , level) {
     places[level] += 1
     ctx.beginPath()
     ctx.rect(((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 50, 50, 35)
+    ctx.fillStyle = '#CDC1FF'
+    ctx.fill()
     ctx.stroke()
     ctx.font = "10px Arial"
+    ctx.fillStyle = 'black'
     ctx.fillText(dom.data, ((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 70, 50);
 
+}
+
+function download() {
+    var link = document.createElement('a');
+    link.download = 'download.png';
+    link.href = canvas.toDataURL();
+    link.click();
+    link.delete;
 }
