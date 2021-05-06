@@ -11,8 +11,7 @@ let level = 0;
 let place = 1
 parent[0] = root
 let child = []
-circal1(0, canvas.width, 20, root , place , level,canvas.width)
-console.log(getNodesPerLevel(0))
+drawElements( 20, root  , level)
 
 function getNodesPerLevel(row) {
     return row <= 0 ? 1 : _getNodesPerLevel(document, row)
@@ -72,6 +71,12 @@ function makeattr(x, y) {
     return path
 }
 
+function makehint(x,y) {
+    const path = new Path2D()
+    path.rect(x-20, y-20, 40, 40)
+    ctx.stroke(path)
+    return path
+}
 
 function getXY(canvas, event) { //shape
     const rect = canvas.getBoundingClientRect()
@@ -80,36 +85,47 @@ function getXY(canvas, event) { //shape
     return {x: x, y: y}
 }
 
-function circal1(start, end, y, dom , place, level) {
-    places[level] += 1
-    console.log(places[level])
-    let ttemp = count
-    ctx.beginPath()
-    ctx.arc((((canvas.width/getNodesPerLevel(level)))*places[level]), y + 80, 30, 0, Math.PI * 2);
-    ctx.stroke()
-    ctx.fillStyle = "black"
-    ctx.font = "10px Arial"
-    ctx.fillText(ttemp + ' / placeis:' + places[level] +" level is: "+level +" / "+ dom.tagName, ((start + end) / 2) - 10, y + 80, 500);
-    let path = makeButton(((start + end) / 2) - 50, y + 50, flags[ttemp])
-    let attr = makeattr(((start + end) / 2) - 50, y + 50, flags[ttemp])
+function redraw() {
+    count = 0
+    isredandt = true
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    places = new Array(20).fill(0);
+    level = 0
+    drawElements(20, root, level )
 
+
+}
+
+function drawElements(y, dom, level) {
+    places[level] += 1
+    let ttemp = count
+    let x = (((canvas.width/(getNodesPerLevel(level)+1)))*places[level])
+    ctx.beginPath()
+    ctx.arc(x, y + 80, 30, 0, Math.PI * 2);
+    ctx.fillStyle = "black"
+    ctx.strokeStyle= "gray"
+    ctx.stroke()
+    ctx.font = "10px Arial"
+    ctx.fillText(ttemp +" / "+ dom.tagName, x-15, y + 80, 500);
+    let path = makeButton(x - 50, y + 50,flags[ttemp])
+    let attr = makeattr(x - 50, y + 50)
+    let hint = makehint(x,y+80)
     if (!isredandt) {
+        document.addEventListener("mouseover",(e)=>{
+            const XY = getXY(canvas, e)
+            if (ctx.isPointInPath(hint, XY.x, XY.y)) {
+                console.log("hello everyboy")
+            }
+        },false)
         document.addEventListener("click", function (e) {
             const XY = getXY(canvas, e)
             if (ctx.isPointInPath(path, XY.x, XY.y)) {
                 if (!flags[ttemp]) {
                     flags[ttemp] = true
-                    count = 0
-                    isredandt = true
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    circal1(0, canvas.width, 20, root)
+                    redraw()
                 } else {
-                    isredandt = true
-                    /////////////////////////////////
                     flags[ttemp] = false
-                    count = 0
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    circal1(0, canvas.width, 20, root)
+                    redraw()
                 }
             } else if (ctx.isPointInPath(attr, XY.x, XY.y)) {
                 isredandt = true
@@ -119,46 +135,41 @@ function circal1(start, end, y, dom , place, level) {
                 }
                 alert(result)
             }
-
-
         }, false)
     }
     count++
 
 
     if (!flags[ttemp]) {
-        let d = (end - start) / dom.childNodes.length
-        let tempStart = start
-        let tempEnd = d + start
+
         y += 100
-        place = 1
         level++
         for (let index = 0; index < dom.childNodes.length; index++) {
-
-            ctx.moveTo((start + end) / 2, y + 10)
-
+            ctx.beginPath()
+            ctx.moveTo((((canvas.width/(getNodesPerLevel(level - 1 )+1)))*places[level-1]), y+10)
             if (dom.childNodes[index].nodeType === 1) {
-                ctx.lineTo((tempStart + tempEnd) / 2, y + 50)
+                ctx.lineTo((((canvas.width/(getNodesPerLevel(level)+1)))*(places[level] + 1)), y + 50)
                 ctx.stroke()
-                circal1(tempStart, tempEnd, y, dom.childNodes[index],place++, level)
-            } else if (dom.childNodes[index].nodeType === 3 && dom.childNodes[index].data.trim() !== "") {
-                ctx.lineTo(((tempStart + tempEnd) / 2) , y + 50)
-                ctx.stroke()
-                rectText(tempStart, tempEnd, y, dom.childNodes[index],place++,level)
-            }
+                ctx.closePath()
 
-            tempStart += d
-            tempEnd += d
+                drawElements(y, dom.childNodes[index], level)
+            } else if (dom.childNodes[index].nodeType === 3 && dom.childNodes[index].data.trim() !== "") {
+                ctx.lineTo((((canvas.width/(getNodesPerLevel(level)+1)))*(places[level] + 1))+25, y + 50)
+                ctx.stroke()
+                ctx.closePath()
+                rectText(y, dom.childNodes[index],level)
+            }
         }
 
     }
 }
 
-function rectText(start, end, y, dom) {
+function rectText( y, dom , level) {
+    places[level] += 1
     ctx.beginPath()
-    ctx.rect(((start + end) / 2)-25, y + 50, 50, 35,);
+    ctx.rect(((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 50, 50, 35)
     ctx.stroke()
     ctx.font = "10px Arial"
-    ctx.fillText(dom.data, ((start + end) / 2) -20, y + 70, 50);
+    ctx.fillText(dom.data, ((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 70, 50);
 
 }
