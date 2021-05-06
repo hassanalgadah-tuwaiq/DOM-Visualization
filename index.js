@@ -12,12 +12,13 @@ let minusimage = new Image()
 let count2 = 0;
 pluseimage.src = 'imgs/1200px-OCR-A_char_Plus_Sign.svg.png'
 minusimage.src = 'imgs/1484942355ios-emoji-heavy-minus-sign.png'
-drawElements( 20, root  , level)
+drawElements(20, root, level)
 
 
 function getNodesPerLevel(row) {
     return row <= 0 ? 1 : _getNodesPerLevel(document, row)
 }
+
 function _getNodesPerLevel(e, row) {
     if (row == 0)
         return "childNodes" in e ? nonEmptyNodes(e) : 0;
@@ -32,6 +33,7 @@ function _getNodesPerLevel(e, row) {
     }
     return total;
 }
+
 function nonEmptyNodes(e) {
     let total = 0
     for (let i = 0; i < e.childNodes.length; i++) {
@@ -50,7 +52,7 @@ function makeButton(x, y, flag) {
     } else {
         currentimg = pluseimage
     }
-    ctx.drawImage(currentimg,x,y,20,25);
+    ctx.drawImage(currentimg, x, y, 20, 25);
     return path
 }
 
@@ -59,14 +61,18 @@ function makeattr(x, y) {
     path.rect(x, y + 40, 20, 20)
     var img = new Image();
     img.src = 'imgs\\twIm6.png';
-    ctx.drawImage(img,x,y+40,20,25);
+    ctx.drawImage(img, x, y + 40, 20, 25);
     return path
 }
 
-function makehint(x,y) {
+function makehint(x, y) {
     const path = new Path2D()
-    path.rect(x-20, y-20, 40, 40)
+    path.rect(x - 20, y - 20, 40, 40)
     return path
+}
+
+function makeCreat(x, y) {
+
 }
 
 function getXY(canvas, event) { //shape
@@ -82,15 +88,13 @@ function redraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     places = new Array(20).fill(0);
     level = 0
-    drawElements(20, root, level )
-
-
+    drawElements(20, root, level)
 }
 
 function drawElements(y, dom, level) {
     places[level] += 1
     let ttemp = count
-    let x = (((canvas.width/(getNodesPerLevel(level)+1)))*places[level])
+    let x = (((canvas.width / (getNodesPerLevel(level) + 1))) * places[level])
     ctx.beginPath()
     ctx.arc(x, y + 80, 30, 0, Math.PI * 2);
     ctx.fillStyle = "#7371FC"
@@ -98,32 +102,30 @@ function drawElements(y, dom, level) {
     ctx.stroke()
     ctx.font = "10px Arial"
     ctx.fillStyle = "black"
-    ctx.fillText(dom.tagName, x-15, y + 80, 500);
-    let path = makeButton(x - 50, y + 50,flags[ttemp])
+    ctx.fillText(dom.tagName, x - 15, y + 80, 500);
+    let path = makeButton(x - 50, y + 50, flags[ttemp])
     let attr = makeattr(x - 50, y + 50)
-    let hint = makehint(x,y+80)
+    let hint = makehint(x, y + 80)
     if (!isredandt) {
-        document.addEventListener("mousemove",function(e){
-
+        document.addEventListener("mousemove", function (e) {
             const XY = getXY(canvas, e)
             if (ctx.isPointInPath(hint, XY.x, XY.y) && dom.innerHTML !== '') {
                 clearTimeout(timer);
-                timer = setTimeout(() => {
+                timer = setTimeout(function () {
                     ctx.beginPath()
                     let text = dom.innerHTML.split('\n')
-                    ctx.rect(XY.x, XY.y, 200, 10*text.length)
+                    ctx.rect(XY.x, XY.y, 200, 10 * text.length)
                     ctx.fillStyle = "#25283D"
                     ctx.fill()
                     ctx.stroke()
                     ctx.font = "10px Arial"
-                    let texty =XY.y+5
+                    let texty = XY.y + 5
                     ctx.fillStyle = "#FC5130"
                     for (let i = 0; i < text.length; i++) {
-                        ctx.fillText(text[i], XY.x, texty+=10,200)
+                        ctx.fillText(text[i], XY.x, texty += 10, 200)
                     }
                     ctx.closePath()
-                }, 300);
-
+                }, 500);
             }
             redraw()
 
@@ -146,6 +148,10 @@ function drawElements(y, dom, level) {
                     result += dom.attributes[i].name + ": " + dom.attributes[i].value + "\n"
                 }
                 alert(result)
+            } else if (ctx.isPointInPath(hint, XY.x, XY.y)) {
+                isredandt = true
+                makeForm()
+
             }
         }, false)
     }
@@ -158,34 +164,60 @@ function drawElements(y, dom, level) {
         level++
         for (let index = 0; index < dom.childNodes.length; index++) {
             ctx.beginPath()
-            ctx.moveTo((((canvas.width/(getNodesPerLevel(level - 1 )+1)))*places[level-1]), y+10)
+            ctx.moveTo((((canvas.width / (getNodesPerLevel(level - 1) + 1))) * places[level - 1]), y + 10)
             if (dom.childNodes[index].nodeType === 1) {
-                ctx.lineTo((((canvas.width/(getNodesPerLevel(level)+1)))*(places[level] + 1)), y + 50)
+                ctx.lineTo((((canvas.width / (getNodesPerLevel(level) + 1))) * (places[level] + 1)), y + 50)
                 ctx.stroke()
                 ctx.closePath()
 
                 drawElements(y, dom.childNodes[index], level)
             } else if (dom.childNodes[index].nodeType === 3 && dom.childNodes[index].data.trim() !== "") {
-                ctx.lineTo((((canvas.width/(getNodesPerLevel(level)+1)))*(places[level] + 1))+25, y + 50)
+                ctx.lineTo((((canvas.width / (getNodesPerLevel(level) + 1))) * (places[level] + 1)) + 25, y + 50)
                 ctx.stroke()
                 ctx.closePath()
-                rectText(y, dom.childNodes[index],level)
+                rectText(y, dom.childNodes[index], level)
             }
         }
 
     }
 }
 
-function rectText( y, dom , level) {
+function rectText(y, dom, level) {
     places[level] += 1
     ctx.beginPath()
-    ctx.rect(((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 50, 50, 35)
+    ctx.rect(((((canvas.width / (getNodesPerLevel(level) + 1))) * places[level])), y + 50, 50, 35)
     ctx.fillStyle = '#CDC1FF'
     ctx.fill()
     ctx.stroke()
     ctx.font = "10px Arial"
     ctx.fillStyle = 'black'
-    ctx.fillText(dom.data, ((((canvas.width/(getNodesPerLevel(level)+1)))*places[level])), y + 70, 50);
+    ctx.fillText(dom.data, ((((canvas.width / (getNodesPerLevel(level) + 1))) * places[level])), y + 70, 50);
+
+}
+
+function makeForm() {
+    let mymode = document.createElement('div')
+    mymode.classList.add("modal")
+    mymode.id = 'myModal'
+    let contant = document.createElement('div')
+    contant.classList.add("modal-content")
+    let span = document.createElement('span')
+    span.classList.add("close")
+    let labal = document.createElement('label')
+    labal.innerText = "HTML: "
+    let input = document.createElement('input')
+    let button = document.createElement('button')
+    button.classList = "btn"
+    button.innerText = "Add"
+    button.onclick = apeendhtml;
+    contant.append(span, labal)
+    contant.append(labal, labal)
+    contant.append(input, labal)
+    contant.append(button, labal)
+    mymode.append(contant)
+    document.body.append(mymode)
+}
+function apeendhtml(){
 
 }
 
@@ -194,5 +226,5 @@ function download() {
     link.download = 'download.png';
     link.href = canvas.toDataURL();
     link.click();
-    link.delete;
+    link.delete();
 }
