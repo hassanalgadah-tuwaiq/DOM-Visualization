@@ -10,6 +10,7 @@ let timer;
 let pluseimage = new Image()
 let minusimage = new Image()
 let count2 = 0;
+let mymode = null
 pluseimage.src = 'imgs/1200px-OCR-A_char_Plus_Sign.svg.png'
 minusimage.src = 'imgs/1484942355ios-emoji-heavy-minus-sign.png'
 drawElements(20, root, level)
@@ -132,6 +133,7 @@ function drawElements(y, dom, level) {
         });
 
         document.addEventListener("click", function (e) {
+
             const XY = getXY(canvas, e)
             if (ctx.isPointInPath(path, XY.x, XY.y)) {
                 if (!flags[ttemp]) {
@@ -150,16 +152,13 @@ function drawElements(y, dom, level) {
                 alert(result)
             } else if (ctx.isPointInPath(hint, XY.x, XY.y)) {
                 isredandt = true
-                makeForm()
-
+                makeForm(dom)
             }
         }, false)
     }
     count++
 
-
     if (!flags[ttemp]) {
-
         y += 100
         level++
         for (let index = 0; index < dom.childNodes.length; index++) {
@@ -195,32 +194,39 @@ function rectText(y, dom, level) {
 
 }
 
-function makeForm() {
-    let mymode = document.createElement('div')
+function makeForm(dom) {
+    mymode = document.createElement('div')
+
     mymode.classList.add("modal")
     mymode.id = 'myModal'
     let contant = document.createElement('div')
     contant.classList.add("modal-content")
     let span = document.createElement('span')
+    span.innerText = "X"
     span.classList.add("close")
     let labal = document.createElement('label')
     labal.innerText = "HTML: "
     let input = document.createElement('input')
+    labal.setAttribute("for",'inputid')
     let button = document.createElement('button')
     button.classList = "btn"
     button.innerText = "Add"
-    button.onclick = apeendhtml;
-    contant.append(span, labal)
-    contant.append(labal, labal)
-    contant.append(input, labal)
-    contant.append(button, labal)
+    contant.append(labal)
+    contant.append(input)
+    contant.append(span)
+    contant.append(button)
     mymode.append(contant)
     document.body.append(mymode)
+    button.addEventListener('click',()=>{
+        dom.innerHTML+= input.value;
+        mymode.remove()
+        redraw()
+    });
+    span.onclick = ()=>{
+        mymode.remove()
+        redraw()
+    }
 }
-function apeendhtml(){
-
-}
-
 function download() {
     var link = document.createElement('a');
     link.download = 'download.png';
